@@ -1,0 +1,109 @@
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="Access-Control-Allow-Origin" content="*">
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<div data-role="page" id="page_main" data-dom-cache="true">
+	<script type="text/javascript">
+	var initCount = 0;
+	var initing_main = false;
+	$('#page_main').bind('pageshow',function(event,data){
+		//清除jqm的缓存html元素  主要防止页面加载多了以后，导致html DOM过多影响网页速度
+		$("#page_info").remove();
+		//清除结束
+	});
+	$(document).on("pageinit", "#page_main", init);
+	function init(event,data) {
+		curevent = event;
+		var parmjson = {};
+		setParm(parmjson);//传递参数
+		$(document).off('pageinit', '#page_main', init);
+		$('#index_title').html(localStorage.getItem("username").replace("(Android)","").replace("(iOS)","").replace("(phonegap)","")+",您好");
+		
+		initMain();
+	}
+	
+	$(document).on("pageshow", "#page_main", daohangload);
+	function daohangload(event,data) {
+		curevent = event;
+		refresh();
+	}
+	
+	function initMain(){
+		if(initing_main){
+			return;
+		}
+		initing_main = true;
+		$("#loadingImg").css("display","");
+		$("#loadingBut").css("display","none");
+		getAjax("get",mainurl,{},
+			function succ(json){
+				//alert(json);
+				var html = JSON.stringify(json);
+				//alert(html);
+				html = html.substring(1,html.length-1).replace(/\\r/g,"").replace(/\\n/g,"").replace(/\\t/g,"").split("<body>")[1].split("</body>")[0];
+				//$(html).appendTo('#maindiv').trigger('create');
+				$("#maindiv").html(html).trigger('create');
+				setTimeout("refresh();$('#tabmenu0').click();", 500);
+				if(initCount==0){
+					setInterval('setTabClass()',200);
+				}
+				initCount++;
+				initing_main = false;
+				$("#loadingImg").css("display","none");
+				$("#loadingBut").css("display","");
+			},
+			function error(e){
+				$.mobile.loading( "hide" );
+				openalert("<div style='text-align:center'>服务器连接出错</div>");
+			},
+			"html"
+		);
+	}
+	
+	//重新渲染jqm样式
+	function refresh(){
+		$('#swiper-pagination-img').html('');
+		$('#swiper-pagination-menu').html('');
+		//设置滑动效果
+		var swiper = new Swiper('#swiper-container-img', {
+	        pagination: '#swiper-pagination-img',
+	        paginationClickable: true,
+	        autoplay: 3000
+		});
+		var swipermenu = new Swiper('#swiper-container-menu', {
+	        pagination: '#swiper-pagination-menu',
+	        paginationClickable: true
+	    });
+	}
+	
+	function zhuxiao(){
+		$('<div>').simpledialog2({
+		    mode: 'button',
+		    headerText: '系统提示',
+		    headerClose: false,
+		    buttonPrompt: "<div style='text-align:center'><font size='4' >是否确认注销当前帐户？</font></div>",
+			buttons : {
+				'是': {
+					click: function () {
+						window.location.href = "index.html";
+					}
+				},
+				'否': {
+					click: function () {},
+					icon: "delete",
+				}
+			}
+		});
+	}
+	</script>
+	<div id="headerdiv" data-role="header" data-position="fixed" style="border-width:0px">
+		<a href="#" onclick="zhuxiao()" data-icon="action" class="ui-btn-left" data-iconpos="notext">注销</a>
+		<h1 id='index_title'></h1>
+		<div style="float: right" class="ui-btn-right"><img id="loadingImg" src='img/loading.gif' style="display:none;margin-right:6px;margin-top:6px"></div>
+		<a id="loadingBut" href="#" onclick="initMain()" data-icon="refresh" class="ui-btn-right" data-iconpos="notext">刷新</a>
+	</div>
+	<div id="maindiv" role="main" class="ui-content" style="width: 100%;padding:0em" align="center"></div>
+</div>

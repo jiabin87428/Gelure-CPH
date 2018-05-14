@@ -1,0 +1,209 @@
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="Access-Control-Allow-Origin" content="*">
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+
+<div data-role="page" id="view_lx_dwjc" data-dom-cache="true">
+
+<input type="hidden" id="zt_lx_dwjc" value="0"><!-- 用于判断该页面是否已经初始化过 0或1 -->
+<input type="hidden" id="currpage_lx_dwjc" value="1"><!-- 当前页数 -->
+<input type="hidden" id="totalpage_lx_dwjc" value="1"><!-- 总页数 -->
+<div data-role="header" data-position="fixed">
+	<a href="#" data-icon="arrow-l" data-rel="back" data-iconpos="notext">返回</a>
+	<h1>待办任务</h1>
+
+</div>
+	<div role="main" class="ui-content" style="width: 100%;padding:0px">
+	
+		<div data-iscroll="" id="scroll_lx_dwjc">
+        	<div class="iscroll-pulldown">
+	          <span class="iscroll-pull-icon"></span><span class="iscroll-pull-label"></span>
+	        </div>
+        	<ul data-role="listview"  id="list_lx_dwjc" style="margin: 0em 0px">
+        	</ul>
+        	<div class="iscroll-pullup">
+	          <span class="iscroll-pull-icon"></span><span class="iscroll-pull-label" data-iscroll-loading-text="Custom loading text" data-iscroll-pulled-text="Custom pulled text">Custom reset text</span>
+	        </div>
+        </div>
+		
+	</div>
+	<!-- 
+	<div data-role="footer" data-position="fixed">
+		<div data-role="navbar">
+			<ul>
+				<li><a href="sys_daohang.html" data-role="button"  data-transition="slide" ><img src="../img/ma1.png" style="width:35px;height:41px"></a></li>
+				<li><a href="sys_daohang2.html" data-role="button"  data-transition="slide"><img src="../img/ma2.png" style="width:35px;height:41px"></a></li>
+				<li><a href="#daohang" data-role="button"  data-transition="slide"><img src="../img/ma3.png" style="width:35px;height:41px"></a></li>
+				<li><a href="#daohang" data-role="button"  data-transition="slide"><img src="../img/ma4.png" style="width:35px;height:41px"></a></li>
+				
+			</ul>
+		</div>
+	</div>
+	 -->
+	<div data-role="popup"  id="menu_view_lx_dwjc">
+		<ul data-role="listview" data-inset="true" style="min-width: 210px;"  id="caozuo_lx_dwjc">
+		</ul>
+	</div>
+	
+	<script>
+	function addViewHtml_lx_dwjc(id,json){
+		var el, li, i;
+		el = document.getElementById('list_'+id);
+		var data = json.data;
+		for(var i in data){  
+			var html = "";
+			//html += "<li>";
+			//html += "<a href='javascript:openAppDoc(\'"+data[i].appid+"\',\'"+data[i].docid+"\',\'"+id+"\')'>";
+			html += "<a class='ui-btn ui-btn-icon-right ui-icon-carat-r' href='javascript:openFlowNoteDoc(\""+data[i].APPID+"\",\""+data[i].DOCID+"\",\""+data[i].NOTEID+"\",\""+id+"\")'>";
+			
+			html += "<table width='100%'><tr><td colspan='2'>"+data[i].TITLE+"</td><tr>";
+			html += "<tr class='xiaozi' width='70%'><td align='left'>"+data[i].SENDERNAME+"</td>";
+			html += "<td align='right'>"+data[i].CREATEDATE+"</td></tr></table></a>";
+			
+			html += "</a>";
+			
+			//html += "</li>";
+			li = document.createElement('li');
+			li.innerHTML = html;
+			el.appendChild(li, el.childNodes[0]);
+		}
+		
+	}
+	function gotPullDownData_lx_dwjc (id,data) {
+		
+		var parm = {appid:getcurappid(),viewid:getcurviewid(),currentPage:1};
+		if (viewtype=="2"){
+			for(var key in search){  
+				parm['value('+key+')'] = search[key];
+			}
+		}
+		
+		getAjax("post",viewurl,parm,
+				function succ(json){
+					//$.mobile.loading( "hide" );
+			    	if (json.success=="false"){
+			    		openalert("<div style='text-align:center'>数据获取失败(15)</div>");
+			    	}else if (json.success=="true"){
+			    		var data = json.data;
+			    		var html = "";
+						for(var i in data){  
+							
+							html += "<li>";
+							html += "<a class='ui-btn ui-btn-icon-right ui-icon-carat-r' href='javascript:openFlowNoteDoc(\""+data[i].APPID+"\",\""+data[i].DOCID+"\",\""+data[i].NOTEID+"\",\""+id+"\")'>";
+							
+							html += "<table width='100%'><tr><td colspan='2'>"+data[i].TITLE+"</td><tr>";
+							html += "<tr class='xiaozi' width='70%'><td align='left'>"+data[i].SENDERNAME+"</td>";
+							html += "<td align='right'>"+data[i].CREATEDATE+"</td></tr></table></a>";
+							
+							html += "</a>";
+							
+							html += "</li>";
+						}
+						//设置页面一些控制值
+				    	$("#currpage_"+id).val(json.currPage);
+				    	$("#totalpage_"+id).val(json.totalPages);
+				    	$("#list_"+id).html(html).listview("refresh");	
+						//$("#list_"+id).prepend(html).listview("refresh");
+						//data.iscrollview.refresh();
+						
+			    		
+			    	}
+			    	
+				},
+				function error(e){
+					//$.mobile.loading( "hide" );
+				}
+			);
+	}
+
+	function gotPullUpData_lx_dwjc(id,data) {
+		if ($("#currpage_"+id).val()==$("#totalpage_"+id).val()){//代表最后一页，不加载
+			$("#list_"+id).listview("refresh");
+			openalert("<div style='text-align:center'>已经是最后一页</div>");
+		}else{
+			
+			var parm = {appid:getcurappid(),viewid:getcurviewid(),currentPage:parseInt($("#currpage_"+id).val())+1};
+			if (viewtype=="2"){
+				for(var key in search){  
+					parm['value('+key+')'] = search[key];
+				}
+			}
+			getAjax("post",viewurl,parm,
+					function succ(json){
+						//$.mobile.loading( "hide" );
+				    	if (json.success=="false"){
+				    		openalert("<div style='text-align:center'>数据获取失败(16)</div>");
+				    	}else if (json.success=="true"){
+				    		var data = json.data;
+				    		var html = "";
+								for(var i in data){  
+									
+									html += "<li>";
+									html += "<a class='ui-btn ui-btn-icon-right ui-icon-carat-r' href='javascript:openFlowNoteDoc(\""+data[i].APPID+"\",\""+data[i].DOCID+"\",\""+data[i].NOTEID+"\",\""+id+"\")'>";
+									
+									html += "<table width='100%'><tr><td colspan='2'>"+data[i].TITLE+"</td><tr>";
+									html += "<tr class='xiaozi' width='70%'><td align='left'>"+data[i].SENDERNAME+"</td>";
+									html += "<td align='right'>"+data[i].CREATEDATE+"</td></tr></table></a>";
+									
+									html += "</a>";
+									
+									html += "</li>";
+								}
+								//alert (json.currPage);
+								$("#currpage_"+id).val(json.currPage);
+					    		$("#totalpage_"+id).val(json.totalPages);
+					    		$("#list_"+id).append(html).listview("refresh");
+								iscrollview.refresh(null, null, $.proxy(function afterRefreshCallback() {
+									this.scrollToElement("#list_"+id+" > li:last-child", 400);
+								}, iscrollview));
+								
+								
+				    	}
+				    	
+					},
+					function error(e){
+						//$.mobile.loading( "hide" );
+					}
+				);
+		}
+	}
+	
+	//缓存情况下每次打开时定义刷新视图方法
+	$('#view_lx_dwjc').bind('pagebeforeshow',function(event,data){
+		currefviewfun = gotPullDownData_lx_dwjc;
+	});
+	
+  	$(document).on("pagebeforecreate", "#view_lx_dwjc", view_lx_dwjc_load);
+	function view_lx_dwjc_load(event,data) {
+		
+		curevent = event;
+		$(document).off('pagebeforecreate', '#view_lx_dwjc', view_lx_dwjc_load);
+		var menuview = getCustomerParm("menuview");
+		
+		if (menuview.length>1){
+			var html = "<ul>";
+			for(var i in menuview){  
+				if (curevent.target.baseURI.indexOf(menuview[i].url.split("##")[1])>0 ){
+					html += "<li><a href=\"#\" class=\"ui-btn-active ui-state-persist\" >"+menuview[i].menuname+"</a></li>";
+				}else{
+					html += " <li><a href=\"javascript:openview('"+menuview[i].viewid+"','"+menuview[i].appid+"','"+menuview[i].url.split("##")[1]+"')\" >"+menuview[i].menuname+"</a></li>";
+				}			
+			}
+			html += "</ul>"
+			$("#view_lx_dwjc_tag").html(html);
+		}
+		//loaded('dbrw',addViewHtml_lx_dwjc,pullUpAction_lx_dwjc,pullDownAction_lx_dwjc);
+		//loaded('dbrw',null,null,null);
+		loaded('dbrw',addViewHtml_lx_dwjc,gotPullUpData_lx_dwjc,gotPullDownData_lx_dwjc);
+	}
+	
+	
+ 	
+	
+
+  	</script>
+	
+</div>

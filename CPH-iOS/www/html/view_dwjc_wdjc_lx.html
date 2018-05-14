@@ -1,0 +1,145 @@
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="Access-Control-Allow-Origin" content="*">
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<div data-role="page" id="view_dwjc_wdjc">
+
+<input type="hidden" id="zt_dwjc_wdjc" value="0"><!-- 用于判断该页面是否已经初始化过 0或1 -->
+<input type="hidden" id="currpage_dwjc_wdjc" value="1"><!-- 当前页数 -->
+<input type="hidden" id="totalpage_dwjc_wdjc" value="1"><!-- 总页数 -->
+<div data-role="header" data-position="fixed">
+	<a href="#" data-icon="arrow-l" data-rel="back" data-iconpos="notext">返回</a>
+	<h1>离线点位检查</h1>
+<!-- 	<a href="#menu_view_dwjc_wdjc" data-icon="bars" data-rel="popup"  class="ui-btn-right" data-transition="slideup" data-iconpos="notext">菜单</a> -->
+	<div data-role="navbar" id="view_dwjc_wdjc_tag">
+		<ul id='ui_dwjc_tag'>
+			<li><a id="menu1" class='ui-btn-active ui-state-persist' href="javascript:showList(1)" >已检查</a></li>
+			<li><a id="menu0" href="javascript:showList(0)" >待检查</a></li>
+		</ul>
+    </div>
+</div>
+	<div role="main" class="ui-content" style="width: 100%;padding:0em">
+	
+		<div data-iscroll="" id="scroll_dwjc_wdjc">
+        	<ul data-role="listview"  id="list_dwjc_wdjc" style="margin: 0em 0px"></ul>
+        </div>
+		 
+	</div>
+
+	<div data-role="popup"  id="menu_view_dwjc_wdjc" onclick="$(this).popup('close')">
+		<ul data-role="listview" data-inset="true" style="min-width: 210px;"  id="caozuo_dwjc_wdjc">
+		</ul>
+	</div>
+	
+	<script type="text/javascript">
+	//缓存情况下每次打开时定义刷新视图方法
+	$('#view_dwjc_wdjc').bind('pagebeforeshow',function(event,data){
+		currefviewfun = null;
+	});
+	
+	$(document).on("pagebeforecreate", "#view_dwjc_wdjc", view_dwjc_wdjc_load);
+	function view_dwjc_wdjc_load(event,data) {
+		curevent = event;
+		$(document).off('pagebeforecreate', '#view_dwjc_wdjc', view_dwjc_wdjc_load);
+
+		var parmjson = getParmObj();//重新获取参数对象
+		var myList = parmjson['myList'];
+		if(myList!=null && myList==1){
+			showList(1);
+			parmjson['myList'] = null;
+			setParm(parmjson);
+		}else{
+			showList(0);
+		}
+	}
+	
+	var type=0;
+	function showList(t){
+		type=t;
+		var db = window.sqlitePlugin.openDatabase({name: servername, location: 'default'});
+		db.transaction(function(tx) {
+			var sql = "select * from t_dwjcjl where userid=? and zt!='0' order by jcrq desc";
+			var cond = [localStorage.getItem("userid")];
+			var iconClass = "ui-btn-icon-right";
+			if(type==0){//待检查器材
+				sql = "select * from t_dwjcjl where zt='0' order by dwmc";
+				cond = null;
+				iconClass = "";
+			}
+			tx.executeSql(sql, cond, function(tx, res) {
+				var datas = new Array();
+				var count = res.rows.length;
+				var html = "";
+				for (i=0;i<count;i++){
+					var func = "javascript:opendoc(\""+res.rows.item(i).docid+"\")";
+					var zt = res.rows.item(i).zt;
+					if(zt=='1'){
+						zt = '[<font color="blue">未提交</font>]';
+					}else if(zt=='2'){
+						zt = '[<font color="green">已提交</font>]';
+					}else{
+						zt = '';
+					}
+					var dwmc = zt+res.rows.item(i).dwmc+"["+res.rows.item(i).dwbh+"]";
+					var username = res.rows.item(i).username;
+					var jcrq = res.rows.item(i).jcrq;
+					if(type==0){//待检查器材
+						func = "javascript:void(0)";
+						dwmc = res.rows.item(i).dwmc;
+						username = res.rows.item(i).dwbh;
+						jcrq = "";
+					}
+					html += "<li>";
+					html += "<a class='ui-btn "+iconClass+" ui-icon-carat-r' href='"+func+"'>";
+					html += "<table width='100%'><tr><td colspan='2'>"+dwmc+"</td><tr>";
+					html += "<tr class='xiaozi' width='70%'><td align='left'>"+username+"</td>";
+					html += "<td align='right'>"+jcrq+"</td></tr></table></a>";
+					html += "</li>";
+				}
+				if(count==0){//无数据
+					html += "<li>";
+					html += "<div style='text-align:center'><font color='red'>无数据</font></div>";
+					html += "</li>";
+				}
+				$("#list_dwjc_wdjc").html(html).listview("refresh");
+				setTimeout("setSubMenuTab()",200);//设置选中效果,需延迟200毫秒,不然选中效果会被清除
+			});
+		}, function(e) {
+			openalert("<div style='text-align:center'>数据库错误"+e.message+"</div>");
+			   
+		});
+	}
+	//设置选中效果
+	function setSubMenuTab(){
+		if(type==0){
+			if(!hasClass(document.getElementById('menu0'),'ui-btn-active')){
+				addClass(document.getElementById('menu0'),'ui-btn-active')
+			}
+			if(hasClass(document.getElementById('menu1'),'ui-btn-active')){
+				removeClass(document.getElementById('menu1'),'ui-btn-active')
+			}
+		}else{
+			if(!hasClass(document.getElementById('menu1'),'ui-btn-active')){
+				addClass(document.getElementById('menu1'),'ui-btn-active')
+			}
+			if(hasClass(document.getElementById('menu0'),'ui-btn-active')){
+				removeClass(document.getElementById('menu0'),'ui-btn-active')
+			}
+		}
+	}
+	
+	function opendoc(docid){
+		var parmjson = getParmObj();//重新获取参数对象
+		parmjson['myList']= 1;
+		parmjson['docid']= docid;//添加docid参数
+		parmjson['view']= "1";//从视图打开点位检查
+		parmjson['dwbh']= "";//添加点位编号参数
+		parmjson['saoma']= "";//扫码打开点位检查
+		setParm(parmjson);
+		$.mobile.changePage("form_dwjc_lx.html");
+	}
+	</script>
+</div>

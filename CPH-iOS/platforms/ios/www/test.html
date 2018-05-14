@@ -1,0 +1,165 @@
+
+
+
+
+
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+<base href="http://ehs.scksteel.com/mobile/m_list.jsp">
+<title></title>
+<!-- jqmobile -->
+<script src="http://ehs.scksteel.com/mobile/js/jquery-2.0.0.min.js"></script>
+<script src="http://ehs.scksteel.com/mobile/js/jquery-2.0.0.min.js"></script>
+<link rel="stylesheet" href="http://ehs.scksteel.com/mobile/jqmobile-1.4.5/jquery.mobile-1.4.5.min.css"/>
+<script src="http://ehs.scksteel.com/mobile/jqmobile-1.4.5/jquery.mobile-1.4.5.min.js"></script>
+<link rel="stylesheet" href="http://ehs.scksteel.com/mobile/css/mobile.css"/>
+<!-- 日期控件 -->
+<script type='text/javascript' src='http://ehs.scksteel.com/js/Calendar.js'></script>
+</head>
+<body>
+<script type="text/javascript">
+	var contextPath = 'http://ehs.scksteel.com';
+	
+	function initSearch(type){
+		if(type==1){
+			page_info_func1 = initSearch;
+			page_info_func1_args = [2];
+			$('#backbtn_search').removeClass("ui-btn-active");
+			var searchHtml = $('#searchdlg').html();
+			$('#searchdlg').html('');
+			$('#page_search').html(searchHtml);
+			/*需要对jquerymobile已渲染的元素去掉样式,否则再次渲染时会出现重影*/
+			/*处理select*/
+			var selects = $('div[id=\"page_search\"] div[class=\"ui-select\"]');
+			for(var i=0;i<selects.length;i++){
+				var select = $(selects[i]).find("select").prop('outerHTML');
+				$(selects[i]).prop('outerHTML',select);
+			}
+			/*处理input*/
+			var inputs = $('div[id=\"page_search\"] div[class^=\"ui-input-text\"]');
+			for(var i=0;i<inputs.length;i++){
+				var input = $(inputs[i]).find("input").prop('outerHTML');
+				$(inputs[i]).prop('outerHTML',input);
+			}
+			$('#page_search').trigger('create');
+		}else{
+			var searchHtml = $('#page_search').html();
+			$('#page_search').html('');
+			$('#searchdlg').html(searchHtml);
+		}
+	}
+</script>
+<div data-role='page' id="mainpage" style="width:100%" class='ui-alt-icon ui-nodisc-icon'>
+	<div data-role="header" data-position="inline">
+		
+			
+		    
+			<h1 style="display:none">EAP手册</h1>
+	        
+	    
+	    <!-- 
+	    <div data-role="controlgroup" data-type="horizontal" class="ui-btn-left">
+	      <a href="http://ehs.scksteel.com/mobile/portal.do" class="ui-btn ui-icon-home ui-btn-icon-left" target="_self">首页</a>
+	    </div>
+	     -->
+	    <div data-role="controlgroup" data-type="horizontal" class="ui-btn-right">
+	    
+	    
+	    </div>
+	</div>
+	
+	<div data-role="content" style="margin-left:-2px;width:100%" align="center">
+	    <ul data-role="listview" data-inset="true">
+		<!-- <li data-role="list-divider">EAP手册</li> -->
+	    
+	    <li data-icon="">
+	    
+	      
+	      
+	      		
+		        	
+		        	<a href="#" onclick=getFile('http://ehs.scksteel.com/getfile?fileid=FEA1220414DA48B89DFA16AF93084974.pdf')>
+		        	
+		        	
+	        	
+	      
+	      
+	    
+	    EAP手册.pdf
+	    <span style="float:right;font-size:12px">
+	    
+	    </span>
+	    </a>
+	    </li>
+	    
+	    </ul>
+	    <span>第1/1页 总数:1</span>
+	    
+	    
+	</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+<script type="text/javascript">
+function setSearch(){
+    if($('#searchdlg').css('display') == 'none'){
+        $('#searchdlg').show(0);
+    } else {
+        $('#searchdlg').hide(0);
+    }
+}
+
+</script>
+<div data-role="dialog" id="searchdlg" class='ui-alt-icon ui-nodisc-icon'>
+	<div data-role="header">
+		<a id="backbtn_search" href="javascript:window.history.go(-1);"  data-icon="delete" data-rel="back" data-iconpos="notext" title="返回"></a>
+		<h1>搜索设置</h1>  
+	</div>
+	<div data-role="content">
+	<form action="http://ehs.scksteel.com/mobile/list.do?appid=4546366A36ED4465990176129C366027&viewid=B8287488E4554CB9B509CBAEC4DF9DB0&menuid=00C83B81979B44348A59D42A1AD61385&addnew=" id="searchfrm" method="post" target="_self">
+		<input type="hidden" name="currentPage" id="currentPage"/>
+		<table width="100%">
+			
+			<tr>
+				<td width="100%" colspan="2" align="center">
+					<a href="javascript:void(0);" data-role="button" data-inline="true" data-theme="b" onclick="resetSccond();">重置</a>
+					<a href="javascript:void(0);" id="scbtn" data-role="button" data-inline="true" data-theme="b" onclick="doOk()">确定</a>
+				</td>
+			</tr>
+		</table>
+	</form>
+	</div>
+</div> 
+<script type="text/javascript">
+$(function(){
+	$("#searchfrm select").selectmenu().selectmenu("refresh");
+});
+function resetSccond(){
+	$('#searchfrm input[type=radio]').attr('checked', false).checkboxradio("refresh");
+	$('#searchfrm input[type=text],input[type=date]').val('');
+	$("#searchfrm select").val('');
+	$("#searchfrm select").selectmenu("refresh");
+}
+function doOk(){
+	
+	$('#searchfrm').submit();
+	
+}
+</script>
+
+
+</body>
+</html>

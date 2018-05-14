@@ -1,0 +1,53 @@
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="Access-Control-Allow-Origin" content="*">
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<div data-role="page" id="view_imglist" >
+<div data-role="header" data-position="fixed">
+	<a href="#" data-icon="arrow-l" data-rel="back" data-iconpos="notext">返回</a>
+	<h1>图片浏览</h1>
+</div>
+	<div role="main" class="ui-content" style="width: 100%;padding:0px">
+	 	<ul data-role="listview" data-inset="true" id="list_view_imglist">
+	 		
+	 	</ul>
+	</div>
+	<script>
+	var docid = "";
+	$(document).on("pagebeforecreate", "#view_imglist", view_imglist_load);
+	function view_imglist_load(event,data) {
+		openloading("正在获取数据...");
+		curevent = event;
+		$(document).off('pagebeforecreate', '#view_imglist', view_imglist_load);
+		var parmjson = getParmObj();
+		docid = parmjson['docid'];
+		parmjson['sx'] = "0";
+		parmjson['docid'] = "";
+		setParm(parmjson);
+		$("#list_view_imglist").html("");
+
+		var db = window.sqlitePlugin.openDatabase({name: servername, location: 'default'});
+		db.transaction(function(tx) {
+			tx.executeSql("select * from t_dwjcjl_zp where pdocid='"+docid+"' order by time desc", [], function(tx, res) {
+				var html = "";
+				for (var i=0;i<res.rows.length;i++){
+					//alert(res.rows.item(i).imageurl);
+					html += "<li onclick='setShowPic(true);' data-src='"+res.rows.item(i).imageurl+"'><img src='"+res.rows.item(i).imageurl+"' width='80px'>";
+					html += "<h2>"+res.rows.item(i).time+"</h2>";
+					html += "<p></p>";
+					html += "</li>";
+				}
+					
+				$("#list_view_imglist").html(html);
+				$("#list_view_imglist").lightGallery();
+			});
+		}, function(e) {
+			$.mobile.loading( "hide" );
+			openalert("<div style='text-align:center'>数据库错误"+e.message+"</div>");
+		});
+	}
+  	</script>
+</div>

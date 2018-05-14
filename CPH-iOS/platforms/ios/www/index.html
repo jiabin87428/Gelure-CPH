@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>安全云</title>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="Access-Control-Allow-Origin" content="*">
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta http-equiv="Content-Security-Policy" content=""/>
+<script src="js/jquery.min.js"></script>
+
+<link rel="stylesheet" href="css/themes/default/jquery.mobile-1.4.5.min.css">
+<link rel="stylesheet" href="css/jquery.mobile.simpledialog.css">
+<link rel="stylesheet" href="css/sungate.css">
+
+<script src="js/jquery.mobile-1.4.5.min.js"></script>
+<script src="js/jquery.mobile.simpledialog2.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+<!-- phonegap扫码插件 -->
+<script type="text/javascript" charset="utf-8" src="plugins/barcodescanner.js"></script>
+<!-- 工具方法 -->
+<script type="text/javascript" charset="utf-8" src="js/tools.js"></script>
+<!-- 全局变量 -->
+<script type="text/javascript" charset="utf-8" src="js/variable.js"></script>
+<!-- 主要结构通用方法 -->
+<script type="text/javascript" charset="utf-8" src="js/main.js"></script>
+<!-- json序列化包 -->
+<script type="text/javascript" charset="utf-8" src="plugins/json2.js"></script>
+<!-- 下拉加载更新 -->
+<link rel="stylesheet" href="css/iscrollview/jquery.mobile.iscrollview.css">
+<link rel="stylesheet" href="css/iscrollview/jquery.mobile.iscrollview-pull.css">
+<script type="text/javascript" src="js/iscrollview/iscroll.js"></script>
+<script type="text/javascript" src="js/iscrollview/jquery.mobile.iscrollview.js"></script>
+<!-- iscroll下拉初始化 -->
+<script type="text/javascript" charset="utf-8" src="js/list.js"></script>
+<!-- 滑动插件样式 -->
+<link rel="stylesheet" href="css/swiper/swiper.min.css">
+<script type="text/javascript" charset="utf-8" src="js/swiper/swiper.jquery.min.js"></script>
+<!-- 图片放大插件 -->
+<link href="css/lightgallery/lightgallery.css" rel="stylesheet">
+<script src="js/lightgallery/picturefill.min.js"></script>
+<script src="js/lightgallery/lightgallery.min.js"></script>
+<script src="js/lightgallery/lg-zoom.min.js"></script>
+<!-- 手写签名 -->
+<script src="js/jq-signature.min.js"></script>
+<style>
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+.input-group {
+    position: relative;
+    display: table;
+    border-collapse: separate;
+    margin-left:-10px
+}
+.input-group-addon:first-child {
+    border-right: 0;
+    border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+.input-group-addon {
+    padding: 6px 12px;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1;
+    color: #555;
+    text-align: center;
+    background-color: #eee;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    width: 1%;
+	white-space: nowrap;
+	vertical-align: middle;
+	display: table-cell;
+}
+.input-group .form-control:last-child {
+    border-left: 0;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+.input-group .form-control {
+    position: relative;
+    z-index: 2;
+    float: left;
+    width: 100%;
+    margin-bottom: 0;
+    display: table-cell;
+}
+.form-control {
+    display: block;
+    width: 97%;
+    height: 45px;
+    padding: 6px 6px;
+    font-size: 22px;
+    line-height: 1.42857143;
+    color: #555;
+    background-color: #fff;
+    background-image: none;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+    -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+    -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+    transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+}
+</style>
+<script>
+    var qydz = localStorage.getItem("domain");
+    if(qydz==null||qydz==''){
+        qydz = qydz_default;
+    }
+$("#sys_peizhi_fwdz").val(qydz);
+function peizhi(){
+    if ( $.trim($("#sys_peizhi_fwdz").val())=="" ){
+        openalert("<div style='text-align:center'>服务器地址不能为空</div>");
+        return ;
+    }else{
+        domain = $.trim($("#sys_peizhi_fwdz").val());
+        //调用variable.js中的方法 设置各种访问地址
+        setDomain(domain);
+        //alert(versionurl);
+        openloading("正在测试连接");
+        getAjaxJsonp("get",versionurl,{},
+                     function succ(json){
+                     $.mobile.loading( "hide" );
+                     $.mobile.back();
+                     } ,
+                     function error(e){
+                     $.mobile.loading( "hide" );
+                     openalert("<div style='text-align:center'>服务器连接失败</div>");
+                     
+                     }
+                     ); 
+                     
+                     //navigator.app.backHistory();
+    }
+    
+}
+
+$.support.cors =true;
+$.mobile.allowCrossDomainPages = true;
+
+$(document).on("pageinit", "#denglu", dengluload);
+function dengluload(event,data) {
+	curevent = event;
+	$(document).off('pageinit', '#denglu', dengluload);
+	
+	if (localStorage.getItem("username")!=null){
+		$("#username").val(localStorage.getItem("usercode"));
+		$("#password").val(localStorage.getItem("password"));
+	}
+}
+
+$(document).on("pageshow", "#denglu", daohangload);
+function daohangload(event,data) {
+	curevent = event;
+	//未配置访问地址,则跳转到配置页面
+	if (localStorage.getItem("domain")==null || localStorage.getItem("domain")==''){
+        setDomain(qydz_default);
+		//$("#tipinfo").html("检测到尚未配置服务器地址！正在跳转...");
+		//setTimeout('$("#xtpz").click();$("#tipinfo").html("")',2000);//2秒后跳转
+		//return;
+	}
+
+	checkVersion();
+}
+
+var showExit = true;//是否已提示'是否确认退出'对话框
+var showPic = false;//是否已打开图片查看界面
+document.addEventListener("deviceready", onDeviceReady, false);//页面加载完后触发的事件
+function onDeviceReady() {
+	// 注册回退按钮事件监听器
+	document.addEventListener("backbutton", onBackKeyDown, false); //返回键
+	// 注册菜单按钮事件监听器
+	document.addEventListener("menubutton", onMenuKeyDown, false); //菜单键
+	
+	//相机初始化
+	pictureSource=navigator.camera.PictureSourceType;
+	destinationType=navigator.camera.DestinationType;
+	
+	//版本信息
+	console.log("AppVersion.version:"+AppVersion.version); // e.g. "1.2.3" 
+    console.log("AppVersion.build:"+AppVersion.build); // e.g. 1234
+    version = AppVersion.version;
+    document.getElementById("versioninfo").innerHTML = "version "+version;
+
+	//手机信息
+    console.log("device_info:"+device.platform+"-"+device.version+"-"+device.productname +"-"+device.model +"-"+ device.uuid +"-"+device.manufacturer+"-"+device.cordova+"-"+device.isVirtual);
+	device_platform = device.platform;
+	device_version = device.version;
+	device_productname = device.productname;
+	device_model = device.model;
+	device_uuid = device.uuid;
+	device_manufacturer = device.manufacturer;
+	device_sdk = device.sdk;
+}
+function onMenuKeyDown() {
+	alert("菜单键");
+	$("#mymenu").click();
+}
+function onBackKeyDown() {
+	var pagename = curevent.target.baseURI;
+	//alert(pagename+">"+showPic+">"+canGoback+">"+showExit);
+	if(showPic){
+		$("#lg-close").click();
+		showPic = false;
+		return;
+	}
+	if (pagename.indexOf("index.html")>0||pagename.indexOf("main.html")>0||pagename.indexOf("main_lx.html")>0){
+		if(pagename.indexOf("#")==-1){
+			if(showExit){
+				$('<div>').simpledialog2({
+				    mode: 'button',
+				    headerText: '系统提示',
+				    headerClose: false,
+				    buttonPrompt: "<div style='text-align:center'><font size='4' >您真的要离开？</font></div>",
+					buttons : {
+						'是': {
+							click: function () {
+								navigator.app.exitApp();
+							}
+						},
+						'否': {
+							click: function () {
+								showExit = true;
+							},
+							icon: "delete",
+						}
+					}
+				});
+				showExit = false;
+			}
+		}else{
+			window.history.go(-1);
+		}
+  	}else if (pagename.indexOf("info.html")>0){
+  		$("#info_goback").click();
+  	}else{
+  		if(canGoback){
+  			navigator.app.backHistory();
+  		}else{
+  			canGoback = true;
+  		}
+  	}
+
+	if(page_info_func1!=null){
+		page_info_func1.apply(this,page_info_func1_args);
+		page_info_func1 = null;
+		page_info_func1_args = [];
+	}
+
+	if(page_info_func2!=null){
+		page_info_func2.apply(this,page_info_func2_args);
+		page_info_func2 = null;
+		page_info_func2_args = [];
+	}
+
+	if(page_info_func3!=null){
+		page_info_func3.apply(this,page_info_func3_args);
+		page_info_func3 = null;
+		page_info_func3_args = [];
+	}
+}
+function denglu(){
+	$("#tipinfo").html("");
+	//清理缓存的各种方法
+// 	navigator.app.clearCache();
+// 	$.mobile.page.prototype.options.domCache = false;
+
+	var username = $.trim($("#username").val());
+	var password = $.trim($("#password").val());
+	if (username==null || username=="" || password==null || password=="" ){
+		openalert("<div style='text-align:center'>用户名和密码不能为空</div>");
+		return ;
+	}
+	var certCode = $.trim($("#certCode").val());
+	if (Phonegap_NeedCertCode=="true" && (certCode==null || certCode=="")){
+		openalert("<div style='text-align:center'>请输入验证码</div>");
+		return ;
+	}
+    openloading("logging...");
+    getAjaxJsonp("get",versionurl,{},
+                 function succ(json){
+                 $.mobile.loading( "hide" );
+                 appname = json.appname;
+                 newappurl = localStorage.getItem("domain")+"/"+appname;//更新客户端的地址
+                 if (version!='-1' && parseFloat(version) < parseFloat(json.version)){//本地版本号小于服务器版本号时,提示更新
+                 $('<div>').simpledialog2({
+                                          mode: 'button',
+                                          headerText: '系统提示',
+                                          headerClose: true,
+                                          buttonPrompt: '发现新版本，是否立即更新？',
+                                          buttons : {
+                                          '是': {
+                                          click: function () {
+                                          navigator.app.loadUrl(encodeURI(newappurl), {openExternal:true});
+                                          }
+                                          },
+                                          '否': {
+                                          click: function () {},
+                                          icon: "back"
+                                          }
+                                          }
+                                          });
+                 }else{
+                 isnewversion = true;
+                 var username = $.trim($("#username").val());
+                 var password = $.trim($("#password").val());
+                 if (username==null || username=="" || password==null || password=="" ){
+                 openalert("<div style='text-align:center'>用户名和密码不能为空</div>");
+                 return ;
+                 }
+                 //localStorage.setItem("username",$("#username").val());
+                 
+                 openloading("logging...");
+                 var parms = {username:username , password:password, certCode:certCode};
+                 getAjaxJsonp("get",dengluurl,parms,
+                              function succ(json){
+                              $.mobile.loading( "hide" );
+                              if (json.success=="false"){
+                              openalert("<div style='text-align:center'>"+json.msg+"</div>");
+                              $("#certCode").val('');
+                              reimg();
+                              }else if (json.success=="true"){
+                              localStorage.setItem("jsessionid",json.jsessionid);
+                              localStorage.setItem("userid",json.user.userid);
+                              localStorage.setItem("username",json.user.username);
+                              localStorage.setItem("usercode",json.user.usercode);
+                              localStorage.setItem("password",$("#password").val());
+                              $.mobile.changePage("main.html");
+                              
+                              getUserId(json.user.userid,jpushurl);
+                              }
+                              },
+                              function error(request, status, error){
+                              $.mobile.loading( "hide" );
+                              }
+                              );
+                 }
+                 },
+                 function error(e){
+                 $.mobile.loading( "hide" );
+                 openalert("<div style='text-align:center'>服务器连接出错</div>");
+                 }
+                 );
+}
+
+function checkVersion(){
+    $("#certCode").val('');
+    var ret = false;
+	getAjaxJsonp("get",versionurl,{},
+		function succ(json){
+			appname = json.appname;
+			isOffLine = json.isOffLine;
+			Phonegap_NeedCertCode = json.Phonegap_NeedCertCode;
+			if(isOffLine=="1"){
+				$("#label_lx").css("display","");
+			}else{
+				$("#label_lx").css("display","none");
+			}
+			if(Phonegap_NeedCertCode=="true"){
+				$("#certCodeTr").css("display","");
+				reimg();
+			}else{
+				$("#certCodeTr").css("display","none");
+			}
+			newappurl = localStorage.getItem("domain")+"/"+appname;//更新客户端的地址
+			if (version!='-1' && parseFloat(version) < parseFloat(json.version)){//本地版本号小于服务器版本号时,提示更新
+				$('<div>').simpledialog2({
+				    mode: 'button',
+				    headerText: '系统提示',
+				    headerClose: true,
+				    buttonPrompt: '发现新版本，是否立即更新？',
+				    buttons : {
+						'是': {
+				        	click: function () {
+				        		navigator.app.loadUrl(encodeURI(newappurl), {openExternal:true});
+							}
+						},
+						'否': {
+				        	click: function () {},
+					        icon: "back"
+						}
+					}
+				});
+			}else{
+				ret = true;
+			}
+		},
+		function error(e){
+			$.mobile.loading( "hide" );
+			openalert("<div style='text-align:center'>服务器连接出错</div>");
+		},
+		"false"
+	);
+	return ret;
+}
+/*刷新验证码*/
+function reimg(){
+	if(Phonegap_NeedCertCode=="true"){
+		document.getElementById("c_img").src = certcodeurl+"?"+new Date();
+	}
+}
+	</script>
+</head>
+<body class="ui-alt-icon ui-nodisc-icon">
+		<div style="height:30px;width:100%;background-color:#00a0df;color:#fff;text-align:center"><span style="position:relative;top:4px;">Login</span></div>
+	<div data-role="page" id="denglu" style="position:relative">
+		<div role="main" class="ui-content">
+			<table width="100%">
+				
+				<tr>
+					<td align="center" colspan="2"><img  src="img/iclogo.png"  style="margin-top:10px;width:280px;"></td>
+				</tr>				
+				<tr>
+					<td  colspan="2">
+						<div style="margin-top:30px;width:100%;color:#54698d" >用户名</div>
+						<div class="" style="margin-top:5px;margin-left:1px;width:99%" >
+							
+							<input id="username" data-role='none' class="form-control" placeholder="用户名" type="text">
+						</div>
+						<div style="margin-top:10px;width:100%;color:#54698d" >密码</div>
+						<div class="" style="margin-top:10px;margin-left:1px;width:99%">
+							
+							<input id="password" data-role='none' class="form-control" placeholder="密码" type="password">
+						</div>
+					</td>
+				</tr>
+				<tr id="certCodeTr" style="display: none;">
+					<td align="center" colspan="2">
+						<div class="" style="margin-top:10px;width:100%">
+							<table width="100%">
+								<tr>
+									<td align="center" width="50%">
+										<input tabindex="3" name="certCode" id="certCode" type="text" style="" class="yzmIpt" placeholder="请输入右侧验证码"/>
+									</td>
+									<td align="center" width="36%">
+										<img border=0 src="" onclick="reimg()" id="c_img" style="cursor:pointer;margin-top:0px" title="看不清？点一下" />
+									</td>
+								</tr>
+							</table>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td align="center" colspan="2">
+						<button onclick="denglu()" style="width:100%;height:40px;margin-top:25px;background-color:#0070d2;color:#fff;font-size:18px;z-index:10;border-radius:5px;border:0;">登录</button>
+					</td>
+				</tr>
+				<tr>
+                    <!--自定义域名，发布时记得注释-->
+					<td align="center" width="100px" height="50px">
+						<input name="index_lx" id="index_lx" type="checkbox" style="display:none">
+    					<label id="label_lx" for="index_lx" style="background-color:#fff;border-color:#fff;margin-top:-12px;z-index:9;display:none"></label>
+					</td>
+					<td align="center" valign="middle" height="50px">
+                        <div style="float:right;margin-top:-12px;color:#54698d"><a id="xtpz" href="html/sys_peizhi.html" style='text-decoration:none;color:#54698d'>客户自定义域名
+						</a></div>
+					</td>
+                    <!--自定义域名，发布时记得注释-->
+				</tr>
+			</table>
+			<br>
+			<div id="versioninfo" style='position: absolute;bottom:20px;left:40%;font-size: 12px'></div>
+		</div>
+	</div>
+	<div data-role="page" id="page_info2">
+		<div id="info2div" role="main" class="ui-content" style="width: 100%;padding:0em" align="center"></div>
+	</div>
+	<div data-role="page" id="page_photo">
+		<div id="photodiv" role="main" class="ui-content" style="width: 100%;padding:0em" align="center"></div>
+	</div>
+	<div data-role="page" id="page_tasklog">
+		<div id="tasklogdiv" role="main" class="ui-content" style="width: 100%;padding:0em" align="center"></div>
+	</div>
+	<div data-role="page" id="page_advice">
+		<div id="advicediv" role="main" class="ui-content" style="width: 100%;padding:0em" align="center"></div>
+	</div>
+	<div data-role="page" id="page_search"></div>
+	<!-- 备用div -->
+	<div data-role="page" id="page_by0" data-dialog="true"><div></div></div>
+	<div data-role="page" id="page_by1" data-dialog="true"><div></div></div>
+	<div data-role="page" id="page_by2" data-dialog="true"><div></div></div>
+	<div data-role="page" id="page_by3" data-dialog="true"><div></div></div>
+	<div data-role="page" id="page_by4" data-dialog="true"><div></div></div>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="Access-Control-Allow-Origin" content="*">
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<div data-role="page" id="form_dwjcsm_lx" >
+	<div data-role="header" data-position="fixed">
+		<a href="#" data-icon="arrow-l" data-rel="back" data-iconpos="notext">返回</a>
+		<h1>离线点位检查</h1>
+	</div>
+	<div role="main" class="ui-content" style="width: 100%;padding:0em"  >
+		<input type="text" id="form_dwjcsm_lx_tm" placeholder="请扫描器材条码" value="" style="ime-mode:disabled"/>
+		<table style="width:100%">
+			<tr>
+				<td><input type="button" data-icon="search" data-iconpos="left" value="查询" onclick="dwjc_chaxun_lx()"/></td>
+				<td><input type="button" data-icon="eye" data-iconpos="left" value="扫码" onclick="dwjc_saoma_lx()"/></td>
+				<td><input type="button" data-icon="bullets" data-iconpos="left" value="列表" onclick="dwjc_liebiao_lx()"/></td>
+			</tr>
+		</table>
+	</div>
+
+	<script type="text/javascript">
+	$('#form_dwjcsm_lx').bind('pageshow',function(event,data){
+		curevent = event;
+		$("#form_dwjcsm_lx_tm")[0].focus();
+		
+		var $inp = $('input'); //所有的input元素
+		$inp.keypress(function (e) { //这里给function一个事件参数命名为e，叫event也行，随意的，e就是IE窗口发生的事件。
+		    var key = e.which; //e.which是按键的值
+	        if(key==13){//确认键
+	        	dwjc_chaxun_lx();
+	        }else{
+				//屏蔽掉以下按键
+	        	//32:空格(或:) 45:- 46:. 48~57:数字0~9
+	        	//97~119小写字母
+	        	//65~87大写字母
+	        	/*if(key==32||key==35||key==42||key==45||key==46||key==48||key==49||key==50||key==51||key==52||key==53||key==54||key==55||key==56||key==57||
+	        		key==64||key==97||key==98||key==99||key==100||key==101||key==102||key==103||key==104||key==105||key==106||key==107||key==108||key==109||
+	        		key==110||key==111||key==112||key==113||key==114||key==115||key==116||key==117||key==118||key==119||key==65||key==66||key==67||key==68||key==69||key==70||
+	        		key==71||key==72||key==73||key==74||key==75||key==76||key==77||key==78||key==79||key==80||key==81||key==82||key==83||key==84||key==85||key==86||key==87){
+	        		return false;
+	        	}*/
+	        }
+		});
+	});
+	function dwjc_saoma_lx(){
+		cordova.plugins.barcodeScanner.scan(
+			function (result) {
+				//alert("扫描结果:"+JSON.stringify(result));
+				if(!result.cancelled){
+					$("#form_dwjcsm_lx_tm").val(result.text);
+					dwjc_chaxun_lx();
+				}else{
+					canGoback = false;
+				}
+		    },
+		    function (error) {
+		    	//openalert("<div style='text-align:center'>扫码错误"+error+"</div>");
+				window.plugins.toast.showLongCenter('扫码错误'+error, function(a){console.log('toast success: ' + a)}, function(b){alert('toast error: ' + b)})
+				$("#form_dwjcsm_lx_tm")[0].focus();
+			}
+		);
+	}
+	
+	function dwjc_chaxun_lx(){
+		var dwbh =  $.trim($("#form_dwjcsm_lx_tm").val());
+		if (dwbh==null || dwbh=="" ){
+			//openalert("<div style='text-align:center'>点位编号不能为空</div>");
+			window.plugins.toast.showLongCenter('点位编号不能为空', function(a){console.log('toast success: ' + a)}, function(b){alert('toast error: ' + b)})
+			$("#form_dwjcsm_lx_tm")[0].focus();
+		}else{
+			var parmjson = getParmObj();//重新获取参数对象
+			parmjson['dwbh']= dwbh;//添加点位编号参数
+			parmjson['saoma']= "1";//扫码打开点位检查
+			parmjson['docid']= "";//添加docid参数
+			parmjson['view']= "";//从视图打开点位检查
+			setParm(parmjson);
+			$.mobile.changePage("form_dwjc_lx.html");	
+		}
+	}
+	
+	function dwjc_liebiao_lx(){
+		var parmjson = getParmObj();//重新获取参数对象
+		parmjson['myList'] = 1;
+		setParm(parmjson);
+		$.mobile.changePage("view_dwjc_wdjc_lx.html");//跳转离线数据列表
+	}
+	</script>
+</div>

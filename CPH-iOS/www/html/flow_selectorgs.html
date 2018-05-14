@@ -1,0 +1,70 @@
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="Access-Control-Allow-Origin" content="*">
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<div data-role="page" id="flow_selectorgs" >
+
+<div data-role="header" data-position="fixed">
+	<a href="javascript:flow_selectorgs_canel()" data-role="button" class="ui-btn-left ui-shadow" data-icon="delete">取消</a>
+	<h1>请选择人员</h1>
+	<a href="javascript:flow_selectorgs_ok()" data-role="button" class="ui-btn-right ui-shadow" data-icon="check">确定</a>
+</div>
+
+<div role="main" class="ui-content" style="width: 100%;padding:0px">
+
+    <fieldset data-role="controlgroup" >
+       <div class="ui-controlgroup-controls" id="list_flow_selectorgs"><!-- 需要手动添加，jqm在动态添加后重新渲染后不会自动添加这个，否则会出现间距现象 -->
+       </div>
+    </fieldset>			
+</div>
+	
+	
+<script>
+$('#flow_selectorgs').bind('pagecreate',function(event,data){
+	//设置文档不重新刷新
+	var parmjson = getParmObj();
+	parmjson['sx'] = "0";
+	setParm(parmjson);
+	
+	openloading("正在获取数据...");
+	
+	
+	var canChooseOrganizations = parmjson.canChooseOrganizations;
+	//alert (canChooseOrganizations.length);
+	var html = "";
+	for (i=0;i<canChooseOrganizations.length;i++){
+		var v = canChooseOrganizations[i];
+		html += '<input type="checkbox" id="flow_selectorgs_'+i+'" name="flow_selectorgs_checkbox" value="'+canChooseOrganizations[i].split("##")[1]+'##" >'
+		+'<label for="flow_selectorgs_'+i+'">'+canChooseOrganizations[i].split("##")[0]+'</label>';
+	}
+	$("#list_flow_selectorgs").html(html) ;
+	$("#list_flow_selectorgs").trigger('create');//动态创建后重新渲染效果
+	$.mobile.loading( "hide" );
+	
+	
+	
+});
+ 
+function flow_selectorgs_ok(){
+	var choosedOrgs = "";
+	$('input[name="flow_selectorgs_checkbox"]:checked').each(function(){ 
+		choosedOrgs +=  $(this).attr('value');
+	}); 
+	
+	if (choosedOrgs==""){
+		openalert("<div style='text-align:center'>请选择部门</div>");
+	}else{
+		doSelectOrgs(choosedOrgs);
+	}
+	
+}
+
+function flow_selectorgs_canel(){
+	history.back();
+}
+</script>
+	
+</div>

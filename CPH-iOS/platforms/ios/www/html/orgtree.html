@@ -1,0 +1,343 @@
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="Access-Control-Allow-Origin" content="*">
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<div data-role="page" id="org_tree" >
+
+<!--<div data-role="header" data-position="fixed">-->
+<!--	<a href="javascript:org_tree_canel()" data-role="button" class="ui-btn-left ui-shadow" data-icon="delete">取消</a>-->
+<!--	<h1 id="orgtree_title">请选择</h1>-->
+<!--	<a href="javascript:org_tree_ok()" data-role="button" class="ui-btn-right ui-shadow" data-icon="check">确定</a>-->
+<!--</div>-->
+<div data-role="header" data-position="fixed">
+    <a href="javascript:org_tree_canel()" data-role="button" class="ui-btn-left ui-shadow" data-icon="delete">Cancel</a>
+    <h1 id="orgtree_title">Please</h1>
+    <a href="javascript:org_tree_ok()" data-role="button" class="ui-btn-right ui-shadow" data-icon="check">OK</a>
+</div>
+
+<div role="main" class="ui-content">
+	<table width="100%">
+		<tr id="orgtable" style="display: none">
+			<td colspan="2">
+				<select name="compSel" id="compSel" onchange="getTreeData(this.value)"></select>
+			</td>
+		</tr>
+		<tr id="searchtable" style="display: none">
+			<td width="80%">
+				<input type="text" id="searchtext" placeholder="多个关键字,'或'用;分割,'且'用+分割"/>
+			</td>
+			<td width="20%">
+<!--				<a href="javascript:dosearch()" data-mini="true" data-role="button">搜索</a>-->
+                <a href="javascript:dosearch()" data-mini="true" data-role="button">Search</a>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2">
+			    <fieldset data-role="controlgroup" >
+			       <div class="ui-controlgroup-controls" id="list_org_tree"><!-- 需要手动添加，jqm在动态添加后重新渲染后不会自动添加这个，否则会出现间距现象 -->
+			       </div>
+			    </fieldset>
+			</td>
+		</tr>
+	</table>
+</div>
+	
+	
+<script>
+var treeType = localStorage.getItem('treeType');
+var selType = localStorage.getItem('selType');
+var fid = localStorage.getItem('fid');
+var withSearch = localStorage.getItem('withSearch');
+$('#org_tree').bind('pagecreate',function(event,data){
+	if(treeType=='HO'||treeType=='HU'){
+		if(treeType=='HO'){
+			//$("#orgtree_title").html("请选择部门");
+            $("#orgtree_title").html("Please choose department");
+		}else if(treeType=='HU'){
+			//$("#orgtree_title").html("请选择人员");
+            $("#orgtree_title").html("Please choose person");
+		}
+		getOrgTreeData('','');//初始化部门/人员树
+	}else{
+		getOtherData('','');
+		if(withSearch!=undefined && withSearch=='true'){
+			$("#searchtable").css("display","");
+		}
+	}
+});
+
+function getTreeData(val,val2){
+	if(treeType=='HO' || treeType=='HU'){
+		getOrgTreeData(val,val2)
+	}else{
+		getOtherData(val,'');
+	}
+}
+
+var orgsize=0;
+//获取组织机构树的数据
+function getOrgTreeData(compid){
+	$("#orgtable").css("display","");
+	//openloading("正在获取数据...");
+    openloading("Loading data...");
+	var succ = function(data) {
+		var orgs = data.orgs.split(';');
+		if(compid==''){
+			var optionHtml = '';
+			for(var i = 0; i < orgs.length; i++) {
+				var text = orgs[i].split(':')[1];
+				var value = orgs[i].split(':')[0];
+				optionHtml += '<option value=\''+value+'\'>'+text+'</option>';
+			}
+			document.getElementById("compSel").innerHTML = optionHtml;
+			$("#compSel").selectmenu("refresh",true);
+			if($("#compSel").val()!=''){//加载完公司后,默认根据第一个公司 查询下级部门
+				getOrgTreeData($("#compSel").val(),'');
+			}
+		}else{
+			var html = '';
+			if(treeType=='HO'){
+				var check_type = 'radio';
+				if(selType=='multiple'){
+					check_type = 'checkbox';
+				}
+				html = '<input type="'+check_type+'" id="org_tree_0" name="org_tree" value="'+$("#compSel").val()+'" onclick="setOrgChecked(0)">'
+					+'<input type="hidden" id="org_tree_v_0" name="org_tree_v" value="0" >'
+					+'<label id="org_tree_l_0" for="org_tree_0">'+$("div[id='compSel-button'] span").html()+'</label>';
+				if(data.orgs.length>0){
+					for(var i = 0; i < orgs.length; i++) {
+						html += '<input type="'+check_type+'" id="org_tree_'+(i+1)+'" name="org_tree" value="'+orgs[i].split(":")[0]+'" onclick="setOrgChecked('+(i+1)+')">'
+							+'<input type="hidden" id="org_tree_v_'+(i+1)+'" name="org_tree_v" value="0" >';
+						var text = orgs[i].split(":")[1];
+						var level = orgs[i].split(":")[2];
+						if(level=='1'){
+							text = "&nbsp;&nbsp;&nbsp;&nbsp;"+text;
+						}
+						if(level=='2'){
+							text = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+text;
+						}
+						html += '<label id="org_tree_l_'+(i+1)+'" for="org_tree_'+(i+1)+'">'+text+'</label>';
+					}
+					orgsize = orgs.length+1;
+				}else{
+					orgsize = 1;
+				}
+			}else if(treeType=='HU'){
+				html = '<ul id="subul0" data-role="listview" data-inset="true" isload="false" size="0">'
+					+'<li id="li0_0" orgid="'+$("#compSel").val()+'" ishead="true" data-role="list-divider" style="cursor:pointer;" class="ui-btn ui-icon-carat-d ui-btn-icon-right" '
+					+'onclick="getUserTreeData(\''+$("#compSel").val()+'\',\'0\')">'+$("div[id='compSel-button'] span").html()+'</li><li style="display:none" id="li0_1">Loading...</li></ul>';
+				if(data.orgs.length>0){
+					for(var i = 0; i < orgs.length; i++) {
+						var text = orgs[i].split(":")[1];
+						var level = orgs[i].split(":")[2];
+						if(level=='1'){
+							text = "&nbsp;&nbsp;&nbsp;&nbsp;"+text;
+						}
+						if(level=='2'){
+							text = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+text;
+						}
+						html += '<ul id="subul'+(i+1)+'" data-role="listview" data-inset="true" isload="false" size="0">'
+							+'<li id="li'+(i+1)+'_0'+'" orgid="'+orgs[i].split(":")[0]+'" ishead="true" data-role="list-divider" style="cursor:pointer;" class="ui-btn ui-icon-carat-d ui-btn-icon-right" '
+							+'onclick="getUserTreeData(\''+orgs[i].split(":")[0]+'\',\''+(i+1)+'\')">'+text+'</li><li style="display:none" id="li'+(i+1)+'_1'+'">Loading...</li></ul>';
+					}
+					orgsize = orgs.length+1;
+				}else{
+					orgsize = 1;
+				}
+			}
+			$("#list_org_tree").html(html) ;
+			$("#list_org_tree").trigger('create');//动态创建后重新渲染效果
+		}
+		$.mobile.loading( "hide" );
+	};
+	getAjaxJsonp('get', contextPath+'/phonegap/tree.do?action=opentree&treeType='+treeType+'&compid='+compid,'',succ);
+}
+var idx;
+//获取部门下人员数据
+function getUserTreeData(orgid,i){
+	idx = i;
+	var isload = $("#subul"+idx).attr("isload");
+	if(isload=='false'){
+		//openloading("正在获取数据...");
+		$("#li"+idx+"_0").prop('class','ui-btn ui-icon-carat-u ui-btn-icon-right ui-li-divider ui-bar-inherit');
+		$("#li"+idx+"_1").css("display","");
+		var succ = function(data) {
+			compid = data.compid;
+			orgid = data.orgid;
+			var html = '';
+			var usersize=0;
+			if(data.orgs.length>0){
+				var check_type = 'radio';
+				if(selType=='multiple'){
+					check_type = 'checkbox';
+				}
+				var orgs = data.orgs.split(";");
+				for(var i = 0; i < orgs.length; i++) {
+					html += '<input type="'+check_type+'" id="user_tree_'+idx+'_'+i+'" name="user_tree" value="'+orgs[i].split(":")[0]+'" onclick="setUserChecked('+idx+','+i+')">'
+						+'<input type="hidden" id="user_tree_v_'+idx+'_'+i+'" name="user_tree_v_'+idx+'" value="0" >';
+					var text = orgs[i].split(":")[1];
+					html += '<label id="user_tree_l_'+idx+'_'+i+'" for="user_tree_'+idx+'_'+i+'">'+text+'</label>';
+				}
+				usersize = orgs.length;
+			}
+			$("#li"+idx+"_1").html(html);
+			$("#subul"+idx).trigger('create');
+			$.mobile.loading( "hide" );
+			$("#subul"+idx).attr("isload","true");
+			$("#subul"+idx).attr("size",usersize);
+		};
+		var err = function(data) {
+			//$("#li"+idx+"_1").html("加载失败,请重试");
+            $("#li"+idx+"_1").html("Loading fail,please try again");
+		};
+		getAjaxJsonp('get', contextPath+'/phonegap/tree.do?action=opentree&treeType='+treeType+'&orgid='+orgid,'',succ,err);
+	}else{
+		var cls =$("#li"+idx+"_0").prop('class');
+		if(cls.indexOf("ui-icon-carat-u")>-1){
+			$("#li"+idx+"_0").prop('class','ui-btn ui-icon-carat-d ui-btn-icon-right ui-li-divider ui-bar-inherit');
+			$("#li"+idx+"_1").css("display","none");
+		}else{
+			$("#li"+idx+"_0").prop('class','ui-btn ui-icon-carat-u ui-btn-icon-right ui-li-divider ui-bar-inherit');
+			$("#li"+idx+"_1").css("display","");
+		}
+	}
+}
+
+var compInit = false;
+function getOtherData(compid,keyword){
+	$("#orgtable").css("display","none");
+	//openloading("正在获取数据...");
+    openloading("Loading data...");
+	var succ = function(data) {
+		var showComp = "showComp" in data?data.showComp=='true':false;
+		if(showComp){
+			$("#orgtable").css("display","");
+			if(!compInit){
+				var orgs = data.orgs.split(';');
+				var optionHtml = '';
+				for(var i = 0; i < orgs.length; i++) {
+					var text = orgs[i].split(':')[1];
+					var value = orgs[i].split(':')[0];
+					optionHtml += '<option value=\''+value+'\'>'+text+'</option>';
+				}
+				document.getElementById("compSel").innerHTML = optionHtml;
+				$("#compSel").selectmenu("refresh",true);
+				if($("#compSel").val()!=''){//加载完公司后,默认根据第一个公司 查询下级
+					getOtherData($("#compSel").val(),'');
+				}
+				compInit = true;
+				return;
+			}
+		}
+		var html = '';
+		var msg = "msg" in data?data.msg:"";
+		if(data.orgs.length>0){
+			var orgs = data.orgs.split(';');
+			var check_type = 'radio';
+			if(selType=='multiple'){
+				check_type = 'checkbox';
+			}
+			if(msg!='' && msg.length>0){
+				html = "<div align='center' style='color:#ff0000'>"+msg+"</div>";
+			}
+			for(var i = 0; i < orgs.length; i++) {
+				html += '<input type="'+check_type+'" id="org_tree_'+i+'" name="org_tree" value="'+orgs[i].split(":")[0]+'" onclick="setOrgChecked('+i+')">'
+					+'<input type="hidden" id="org_tree_v_'+i+'" name="org_tree_v" value="0" >';
+				var text = orgs[i].split(":")[1];
+				html += '<label id="org_tree_l_'+i+'" for="org_tree_'+i+'">'+text+'</label>';
+			}
+			orgsize = orgs.length+1;
+		}
+		if(html==''){
+			html = "<div align='center' style='color:#ff0000'>无数据</div>";
+		}
+		$("#list_org_tree").html(html) ;
+		$("#list_org_tree").trigger('create');//动态创建后重新渲染效果
+		$.mobile.loading( "hide" );
+	};
+	getAjaxJsonp('get', contextPath+'/phonegap/tree.do?action=opentree&treeType='+treeType+"&compid="+(compid==undefined?"":compid)+"&keyword="+encodeURIComponent(keyword),'',succ);
+}
+
+function dosearch(){
+	getOtherData($("#compSel").val(),$("#searchtext").val());
+}
+
+function setOrgChecked(i){
+	if(selType=="multiple"){
+		if($("#org_tree_v_"+i).val()==1){
+			$("#org_tree_v_"+i).val(0);
+		}else{
+			$("#org_tree_v_"+i).val(1);
+		}
+	}else{
+		$("input[name='org_tree_v']").val(0);
+		$("#org_tree_v_"+i).val(1);
+	}
+}
+
+function setUserChecked(idx,i){
+	if(selType=="multiple"){
+		if($("#user_tree_v_"+idx+"_"+i).val()==1){
+			$("#user_tree_v_"+idx+"_"+i).val(0);
+		}else{
+			$("#user_tree_v_"+idx+"_"+i).val(1);
+		}
+	}else{
+		$("input[name^='user_tree_v']").val(0);
+		$("#user_tree_v_"+idx+"_"+i).val(1);
+	}
+}
+
+function org_tree_ok(){
+	var ret_id='';
+	var ret_mc='';
+	if(treeType=='HU'){
+		for(var i=0;i<orgsize;i++){
+			var size = $("#subul"+idx).attr("size");
+			for(var j=0;j<size;j++){
+				var v = $("#user_tree_v_"+i+"_"+j).val();
+				if(v=='1'){//选中
+					if(ret_id!=''){
+						ret_id+=";";
+						ret_mc+=";";
+					}
+					ret_id += $("#user_tree_"+i+"_"+j).val();
+					ret_mc += $("#user_tree_l_"+i+"_"+j).html().replace(/&nbsp;/g,"");
+				}
+			}
+		}
+	}else{
+		for(var i=0;i<orgsize;i++){
+			var v = $("#org_tree_v_"+i).val();
+			if(v=='1'){//选中
+				if(ret_id!=''){
+					ret_id+=";";
+					ret_mc+=";";
+				}
+				ret_id += $("#org_tree_"+i).val();
+				ret_mc += $("#org_tree_l_"+i).html().replace(/&nbsp;/g,"");
+			}
+		}
+	}
+	var succ_func = tree_succ_func_default;
+	if(tree_succ_func!=undefined && tree_succ_func!=null){
+		succ_func = tree_succ_func;
+	}
+	succ_func.apply(this,[ret_mc+"#"+ret_id]);
+	history.back();
+}
+
+var tree_succ_func_default = function succ(ret){
+	$("#"+fid[0]).val(ret.split("#")[0]);
+	$("#"+fid[1]).val(ret.split("#")[1]);
+}
+
+function org_tree_canel(){
+	history.back();
+}
+</script>
+	
+</div>

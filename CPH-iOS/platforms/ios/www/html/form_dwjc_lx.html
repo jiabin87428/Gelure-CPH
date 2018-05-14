@@ -1,0 +1,421 @@
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="Access-Control-Allow-Origin" content="*">
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<div data-role="page" id="form_dwjc_lx" data-dom-cache="true">
+
+
+<div data-role="header" data-position="fixed">
+	<a href="#" id="backto" data-icon="arrow-l" data-rel="back" data-iconpos="notext">返回</a>
+	<h1>离线点位检查</h1>
+	<!--<a href="#menu_form_dwjc_lx" onclick="form_dwjc_lx_cz()" data-icon="bars" data-rel="popup"  class="ui-btn-right" data-transition="slideup" data-iconpos="notext">菜单</a>-->
+
+</div>
+	<div data-role="popup"  id="menu_form_dwjc_lx" onclick="$(this).popup('close')">
+		<ul data-role="listview" data-inset="true" style="min-width: 210px;"  id="caozuo_form_dwjc_lx" >
+		</ul>
+	</div>
+	<div role="main" class="ui-content" style="width: 100%;padding:0em">
+		<div class="ui-field-contain" >
+			<table style="width: 100%" >
+				<tr >
+					<td class="leftw">点位名称:</td>
+					<td id="form_dwjc_lx_dwmc"  class="rightw" onclick="dwxxinfo()" clean="1" style="color: red"></td>
+				</tr>
+				
+			</table>
+		</div>
+		<div id="form_dwjc_lx_subform">
+		</div>
+	</div>
+	<div data-role="footer" data-position="fixed">
+		<div data-role="navbar" id='menudiv1' style='display:none'>
+			<ul>
+				<li><a class='ui-btn' onclick='imglist()'>图片列表</a></li>
+			</ul>
+        </div>
+        <div data-role="navbar" id='menudiv2' style='display:none'>
+            <ul>
+                <li><a class='ui-btn' onclick='form_dwjc_lx_dosave("false")' >保存</a></li>
+                <li><a class='ui-btn' onclick='form_dwjc_lx_dosave("true")'>提交</a></li>
+                <li><a class='ui-btn' onclick='form_dwjc_lx_dosave("false",paizhao)'>拍照</a></li>
+                <li><a class='ui-btn' onclick='imglist()'>图片列表</a></li>
+            </ul>
+        </div>
+	</div>
+	<script type="text/javascript">
+	var docid = "";
+	var issaved = false;
+	var zt = "0";
+	//主要用于页面显示前清理缓存页面数据,不出现页面闪一下后才清掉数据
+	$('#form_dwjc_lx').bind('pagebeforeshow',function(event,data){
+		
+		if (getParmObj().sx == "0"){//不刷新页面下还原
+		}else{
+			$("#form_dwjc_lx_subform").html("");
+			var objs = $("#form_dwjc_lx input,#form_dwjc_lx td,#form_dwjc_lx textarea,#form_dwjc_lx select");
+			cleanForm(objs);
+		}
+        form_dwjc_lx_cz();
+	});
+	//当用page使用缓存时，只有pageshow事件才能每次被执行，其他事件如pagebeforecreate等只会被执行一次
+	$('#form_dwjc_lx').bind('pageshow',function(event,data){
+		curevent = event;
+		var parmjson = getParmObj();
+		if (parmjson.sx == "0"){//不刷新页面下还原
+			parmjson['sx'] = null;
+			setParm(parmjson);
+		}else {
+			openloading("正在获取数据...");
+			docinfo = {};
+			var sql1 = "";//主表sql
+			var sql2 = "";//子表sql
+			if (parmjson['saoma']=="1" && (parmjson['dwbh'] != null)) {//如果是从扫码来的
+				sql1 = "select * from t_dwjcjl where dwbh='"+parmjson['dwbh']+"' and zt='0'";
+				sql2 = "select * from t_dwjcjl_sub where pdocid in(select docid from t_dwjcjl where dwbh='"+parmjson['dwbh']+"' and zt='0') order by idx";
+			}else if(parmjson['view']=="1" && (parmjson['docid'] != null)) {//如果是从离线视图来的
+				sql1 = "select * from t_dwjcjl where docid='"+parmjson['docid']+"' and zt!='0'"
+				sql2 = "select * from t_dwjcjl_sub where pdocid in(select docid from t_dwjcjl where docid='"+parmjson['docid']+"' and zt!='0') order by idx";
+				issaved = true;
+			}
+			if(sql1==""){
+				return;
+			}
+			var db = window.sqlitePlugin.openDatabase({name: servername, location: 'default'});
+			db.transaction(function(tx) {
+				tx.executeSql(sql1, [], function(tx, res) {
+					if (res.rows.length>0){
+						$("#form_dwjc_lx_dwmc").html(res.rows.item(0).dwmc + "[" + res.rows.item(0).dwbh + "]");
+						
+						zt = res.rows.item(0).zt;
+						//生成中间临时存储主表数据信息
+						//docinfo['appid'] = parmjson['appid'];
+						//docinfo['docid'] = "";
+						var userid = localStorage.getItem("userid");
+						var username = localStorage.getItem("username");
+						docid = res.rows.item(0).docid;
+						var jcrq = getNowTime(true);
+						if(parmjson['view']=="1" && (parmjson['docid'] != null)){
+							userid = res.rows.item(0).userid;
+							username = res.rows.item(0).username;
+							docid = parmjson['docid'];
+							jcrq = res.rows.item(0).jcrq;
+						}
+						var pribean = {};
+						pribean['userid'] = userid;
+						pribean['username'] = username;
+						pribean['docid'] = docid;
+						pribean['jclx'] = res.rows.item(0).jclx;
+						pribean['dwmc'] = res.rows.item(0).dwmc;
+						pribean['dwbh'] = res.rows.item(0).dwbh;
+						pribean['sjmbdocid'] = res.rows.item(0).sjmbdocid;
+						pribean['sjmbappid'] = res.rows.item(0).sjmbappid;
+						pribean['dwid'] = res.rows.item(0).dwid;
+						pribean['jcrq'] = jcrq;
+						pribean['datasource'] = res.rows.item(0).datasource;
+						
+						//为了传递给form_dwjc_zzssxx的数据，所以先加载到docinfo对象里提供调用
+						//pribean['xxlist'] = json.xxlist;
+						docinfo['pribean'] = pribean;
+						
+						//循环检查内容生成子表信息
+						tx.executeSql(sql2, [], function(tx, res) {
+							var html = "";
+							var ass1beans = new Array();
+							for (i=0;i<res.rows.length;i++){
+								//alert (res.rows.item(i).dxmc+"----"+res.rows.item(i).jcnr+"----"+res.rows.item(i).pdbs);
+								html += '<div class="ui-field-contain" name="form_dwjc_lx_jcjg_ass1">';
+								html += '<table width="100%">';
+
+								html += '<tr><td class="leftw">检查内容：</td>';
+								html += '<td class="rightw">' + res.rows.item(i).jcnr + '</td></tr>';
+
+								html += '<tr><td class="leftw">检查指标：</td>';
+								var pdbs = res.rows.item(i).pdbs;
+								var s_pdbs = "";
+								if (pdbs == "1") {
+									s_pdbs = "&gt;" + res.rows.item(i).bzz+ res.rows.item(i).qzdw;
+								} else if (pdbs == "2") {
+									s_pdbs = "&lt;" + res.rows.item(i).bzz+ res.rows.item(i).qzdw;
+								} else if (pdbs == "3") {
+									s_pdbs = "=" + res.rows.item(i).bzz+ res.rows.item(i).qzdw;
+								} else if (pdbs == "4") {
+									s_pdbs = "≥" + res.rows.item(i).bzz+ res.rows.item(i).qzdw;
+								} else if (pdbs == "5") {
+									s_pdbs = "≤" + res.rows.item(i).bzz+ res.rows.item(i).qzdw;
+								} else if (pdbs == "6") {
+									s_pdbs = res.rows.item(i).xxz + res.rows.item(i).qzdw+ "~" + res.rows.item(i).sxz+res.rows.item(i).qzdw;
+								}
+								html += '<td class="rightw">' + s_pdbs+ '</td></tr>';
+
+								var jcjg = "";
+								if(parmjson['view']=="1" && (parmjson['docid'] != null)){
+									jcjg = res.rows.item(i).jcjg;
+								}
+								
+								html += '<tr><td class="leftw">检查结果：</td><td class="rightw">';
+								if(zt!='2'){
+									html += '<input type="hidden" id="form_dwjc_lx_pdbs_'+i+'" value="'+res.rows.item(i).pdbs+'">';
+									html += '<input type="hidden" id="form_dwjc_lx_bzz_'+i+'" value="'+res.rows.item(i).bzz+'">';
+									html += '<input type="hidden" id="form_dwjc_lx_xxz_'+i+'" value="'+res.rows.item(i).xxz+'">';
+									html += '<input type="hidden" id="form_dwjc_lx_sxz_'+i+'" value="'+res.rows.item(i).sxz+'">';
+									html += '<textarea onkeyup="textChange('+i+',1)" onblur="textChange('+i+',1)" id="form_dwjc_lx_jcjg_'+i+'" placeholder="请填写检查结果">'+jcjg+'</textarea>';
+								}else{
+									html += jcjg;
+								}
+
+								html += '<tr><td class="leftw">状态：</td><td class="rightw">';
+								var jczt = res.rows.item(i).jczt;
+								if(zt!='2'){
+									var jczt3 = "";
+									var jczt2 = "";
+									var jczt1 = "checked";
+									if(parmjson['view']=="1" && (parmjson['docid'] != null)){
+										if(jczt==2){
+											jczt3 = "checked";
+											jczt2 = "";
+											jczt1 = "";
+										}else if(jczt==1){
+											jczt3 = "";
+											jczt2 = "checked";
+											jczt1 = "";
+										}
+									}
+									html += '<fieldset data-role="controlgroup" data-type="horizontal" >';
+									html += '<input id="form_dwjc_lx_jczt3_'+i+'" type="radio" name="form_dwjc_lx_jczt_'+i+'" value="2" '+jczt3+'><label for="form_dwjc_lx_jczt3_'+i+'">异常</label>';
+									html += '<input id="form_dwjc_lx_jczt2_'+i+'" type="radio" name="form_dwjc_lx_jczt_'+i+'" value="1" '+jczt2+'><label for="form_dwjc_lx_jczt2_'+i+'">正常</label>';
+									html += '<input id="form_dwjc_lx_jczt1_'+i+'" type="radio" name="form_dwjc_lx_jczt_'+i+'" value="0" '+jczt1+'><label for="form_dwjc_lx_jczt1_'+i+'">未检</label>';
+									html += '</fieldset>';
+								}else{
+									if (jczt=="0"){
+										jczt = "异常";
+									}else if (jczt=="1"){
+										jczt = "正常";
+									}else if (jczt=="2"){
+										jczt = "未检";
+									}
+									html += jczt;
+								}
+								
+								html += '</td></tr></table></div>';
+								
+								
+								//由于是welbsql执行查询后异步调用，所以子表数据后加载到docinfo中
+								var ass1 = {};
+								
+								ass1['pdocid'] = docinfo.pribean.docid;
+								ass1['dwbh'] = res.rows.item(i).dwbh;
+								ass1['jcnrid'] = res.rows.item(i).jcnrid;
+								ass1['idx'] = res.rows.item(i).idx;
+								ass1['xlh'] = res.rows.item(i).xlh;
+								ass1['dxmc'] = res.rows.item(i).dxmc;
+								ass1['qzdw'] = res.rows.item(i).qzdw;
+								ass1['dxid'] = res.rows.item(i).dxid;
+								
+								ass1['xxz'] = res.rows.item(i).xxz;
+								ass1['bzz'] = res.rows.item(i).bzz;
+								ass1['jcnr'] = res.rows.item(i).jcnr;
+								ass1['sxz'] = res.rows.item(i).sxz;
+								ass1['jcjg'] = res.rows.item(i).jcjg;
+								ass1['jczt'] = res.rows.item(i).jczt;
+								ass1['dxbh'] = res.rows.item(i).dxbh;
+								ass1['pdbs'] = res.rows.item(i).pdbs;
+								
+								ass1beans[i] =  ass1;
+								
+							}
+							docinfo['ass1beans'] = ass1beans;
+							
+							$("#form_dwjc_lx_subform").html(html) ;
+							$("#form_dwjc_lx_subform").trigger('create');
+							
+							$.mobile.loading( "hide" );
+						});
+						zt = "1";
+						form_dwjc_lx_cz();
+					}else{
+						$.mobile.loading( "hide" );
+						var errorinfo = "<div style='text-align:center'>未找到离线点位检查模板</div>";
+						if(parmjson['view']=="1" && (parmjson['docid'] != null)){
+							errorinfo = "<div style='text-align:center'>未找到离线点位检查数据</div>";
+						}
+						openalert(errorinfo);
+						//$.ui.goBack();
+						setTimeout('$("#backto").click()',2000);//2秒后返回到上一页面(点位扫描页面)
+					}
+			    });
+			}, function(e) {
+				$.mobile.loading( "hide" );
+				openalert("<div style='text-align:center'>数据库错误"+e.message+"</div>");
+			});
+		}
+	});
+	
+	function form_dwjc_lx_dosave(isclose,fun){
+		openloading("正在保存...");
+		var db = window.sqlitePlugin.openDatabase({name: servername, location: 'default'});
+		db.transaction(function(tx) {
+			tx.executeSql("select dwmc  from t_dwjcjl where docid='"+docinfo.pribean.docid+"'", [], function(tx, res) {				
+				if (res.rows.length>0){//有数据则更新
+					var	dwjcdata = [
+									docinfo.pribean.userid,
+									docinfo.pribean.username,
+									docinfo.pribean.usercode,
+									docinfo.pribean.docid,
+									docinfo.pribean.jclx,
+									docinfo.pribean.dwmc,
+									docinfo.pribean.dwbh,
+									docinfo.pribean.sjmbdocid,
+									docinfo.pribean.sjmbappid,
+									docinfo.pribean.dwid,
+									docinfo.pribean.jcrq,
+									docinfo.pribean.datasource,
+									'1'
+								];
+					//更新主表
+					tx.executeSql("update t_dwjcjl set userid=?,username=?,usercode=?,docid=?,jclx=?,dwmc=?,dwbh=?,sjmbdocid=?,sjmbappid=?,dwid=?,jcrq=?,datasource=?,zt=? where docid='"+docinfo.pribean.docid+"'", dwjcdata);
+					//先删除子表,再插入
+					tx.executeSql("delete from t_dwjcjl_sub where pdocid=?", [docinfo.pribean.docid], function(tx, res) {
+						for (i = 0; i < document.getElementsByName("form_dwjc_lx_jcjg_ass1").length; i++) {
+							//设置新值
+							docinfo.ass1beans[i]['jcjg'] = $("#form_dwjc_lx_jcjg_"+i).val();
+							docinfo.ass1beans[i]['jczt'] = "";
+							var jczts = document.getElementsByName("form_dwjc_lx_jczt_"+i);
+							for (k=0;k<jczts.length;k++){
+								if(jczts[k].checked){
+									//alert (jczts[k].value());
+									docinfo.ass1beans[i]['jczt'] = jczts[k].value;
+									break;
+								}
+							}
+							var	dwjcsubdata = [
+						        docinfo.ass1beans[i].pdocid,
+						        docinfo.ass1beans[i].dwbh,
+						        docinfo.ass1beans[i].jcnrid,
+						        docinfo.ass1beans[i].idx,
+						        docinfo.ass1beans[i].xlh,
+						        docinfo.ass1beans[i].dxmc,
+						        docinfo.ass1beans[i].qzdw,
+						        docinfo.ass1beans[i].dxid,
+						        docinfo.ass1beans[i].xxz,
+						        docinfo.ass1beans[i].bzz,
+						        docinfo.ass1beans[i].jcnr,
+						        docinfo.ass1beans[i].sxz,
+						        docinfo.ass1beans[i].jcjg,
+						        docinfo.ass1beans[i].jczt,
+						        docinfo.ass1beans[i].dxbh,
+						        docinfo.ass1beans[i].pdbs
+							];
+							
+							tx.executeSql("INSERT INTO t_dwjcjl_sub (pdocid,dwbh,jcnrid,idx,xlh,dxmc,qzdw,dxid,xxz,bzz,jcnr,sxz,jcjg,jczt,dxbh,pdbs)"+
+			 	 					" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", dwjcsubdata);
+						}
+					});
+				}else{//没有则新建
+					var	dwjcdata = [
+									docinfo.pribean.docid,
+									docinfo.pribean.userid,
+									docinfo.pribean.username,
+									docinfo.pribean.usercode,
+									docinfo.pribean.docid,
+									docinfo.pribean.jclx,
+									docinfo.pribean.dwmc,
+									docinfo.pribean.dwbh,
+									docinfo.pribean.sjmbdocid,
+									docinfo.pribean.sjmbappid,
+									docinfo.pribean.dwid,
+									docinfo.pribean.jcrq,
+									docinfo.pribean.datasource,
+									'1'//状态(0:模板,1:已保存,2:已提交)
+								];
+					//插入主表
+					tx.executeSql("INSERT INTO t_dwjcjl (docid,userid,username,usercode,docid,jclx,dwmc,dwbh,sjmbdocid,sjmbappid,dwid,jcrq,datasource,zt) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)", dwjcdata);
+					//插入子表
+					for (i = 0; i < document.getElementsByName("form_dwjc_lx_jcjg_ass1").length; i++) {
+						//设置新值
+						docinfo.ass1beans[i]['jcjg'] = $("#form_dwjc_lx_jcjg_"+i).val();
+						docinfo.ass1beans[i]['jczt'] = "";
+						var jczts = document.getElementsByName("form_dwjc_lx_jczt_"+i);
+						for (k=0;k<jczts.length;k++){
+							if(jczts[k].checked){
+								//alert (jczts[k].value());
+								docinfo.ass1beans[i]['jczt'] = jczts[k].value;
+								break;
+							}
+						}
+						var	dwjcsubdata = [
+					        docinfo.ass1beans[i].pdocid,
+					        docinfo.ass1beans[i].dwbh,
+					        docinfo.ass1beans[i].jcnrid,
+					        docinfo.ass1beans[i].idx,
+					        docinfo.ass1beans[i].xlh,
+					        docinfo.ass1beans[i].dxmc,
+					        docinfo.ass1beans[i].qzdw,
+					        docinfo.ass1beans[i].dxid,
+					        docinfo.ass1beans[i].xxz,
+					        docinfo.ass1beans[i].bzz,
+					        docinfo.ass1beans[i].jcnr,
+					        docinfo.ass1beans[i].sxz,
+					        docinfo.ass1beans[i].jcjg,
+					        docinfo.ass1beans[i].jczt,
+					        docinfo.ass1beans[i].dxbh,
+					        docinfo.ass1beans[i].pdbs
+						];
+						
+						tx.executeSql("INSERT INTO t_dwjcjl_sub (pdocid,dwbh,jcnrid,idx,xlh,dxmc,qzdw,dxid,xxz,bzz,jcnr,sxz,jcjg,jczt,dxbh,pdbs)"+
+		 	 					" VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", dwjcsubdata);
+						issaved = true;
+					}
+					//openalert("<div style='text-align:center'>保存成功!</div>");
+				}
+				var parmjson = getParmObj();//重新获取参数对象
+				parmjson['docid']= docid;//添加docid参数
+				setParm(parmjson);
+				$.mobile.loading( "hide" );
+				window.plugins.toast.showLongBottom('保存成功', function(a){console.log('toast success: ' + a)}, function(b){alert('toast error: ' + b)})
+				if(isclose=='true'){
+					//$.ui.goBack();
+					$("#backto").click();
+				}else if(fun){
+					paizhao('','','',paizhao_succ);
+				}
+			});
+		}, function(e) {
+			openalert("<div style='text-align:center'>数据库错误"+e.message+"</div>");
+		   
+		});
+	}
+	
+	function paizhao_succ(imageURI){
+		var db = window.sqlitePlugin.openDatabase({name: servername, location: 'default'});
+		db.transaction(function(tx) {
+			tx.executeSql("INSERT INTO t_dwjcjl_zp (docid,pdocid,imageurl,time) VALUES (?,?,?,?)", [getUUID(),docinfo.pribean.docid,imageURI,getNowTime(true)]);
+			window.plugins.toast.showLongBottom('照片保存成功', function(a){console.log('toast success: ' + a)}, function(b){alert('toast error: ' + b)})
+		});
+	}
+	
+	function dwxxinfo() {
+		//$.ui.loadContent("#form_dwjc_lx_zzssxx", false, false, "slide");
+	}
+
+	function form_dwjc_lx_cz(){
+		if(zt=='0'){
+            $("#menudiv1").css("display","none");
+            $("#menudiv2").css("display","none");
+        }else if(zt!='2'){
+            $("#menudiv1").css("display","none");
+            $("#menudiv2").css("display","block");
+        }else{
+            $("#menudiv1").css("display","block");
+            $("#menudiv2").css("display","none");
+        }
+  	}
+	
+	function imglist(){
+		imglist_lx(docid);
+	}
+	</script>
+</div>

@@ -1,0 +1,55 @@
+
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta http-equiv="Access-Control-Allow-Origin" content="*">
+<META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<div data-role="page" id="page_peizhi">
+
+	<div data-role="header" data-position="fixed">
+		<h1>服务器配置</h1>
+		<a href="#" data-icon="arrow-l" data-rel="back" data-iconpos="notext">返回</a>
+	</div>
+	<div role="main" class="ui-content">
+		<label for="sys_peizhi_fwdz">服务器地址:</label> 
+		<input type="text"	id="sys_peizhi_fwdz"/>
+		<button onclick="peizhi()">确定</button>
+	</div>
+	
+	<script type="text/javascript">
+		var qydz = localStorage.getItem("domain");
+		if(qydz==null||qydz==''){
+			qydz = qydz_default;
+		}
+		$("#sys_peizhi_fwdz").val(qydz);
+		function peizhi(){
+			if ( $.trim($("#sys_peizhi_fwdz").val())=="" ){
+				openalert("<div style='text-align:center'>服务器地址不能为空</div>");
+				return ;
+			}else{
+				domain = $.trim($("#sys_peizhi_fwdz").val());
+				//调用variable.js中的方法 设置各种访问地址
+				setDomain(domain);
+				//alert(versionurl);
+				openloading("正在测试连接");
+				getAjaxJsonp("get",versionurl,{},
+					function succ(json){
+		            	$.mobile.loading( "hide" );
+		            	$.mobile.back();
+		            } ,
+		            function error(e){
+		            	$.mobile.loading( "hide" );
+		            	openalert("<div style='text-align:center'>服务器连接失败</div>");
+		            	
+		            } 
+		        ); 
+				
+				//navigator.app.backHistory();
+			}
+			
+		}
+	</script>
+
+</div>
