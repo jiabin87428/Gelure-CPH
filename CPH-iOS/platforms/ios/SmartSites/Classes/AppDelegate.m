@@ -37,7 +37,7 @@
 #import <UserNotifications/UserNotifications.h> // 这里是iOS10需要用到的框架
 #endif
 
-static NSString * const JPUSHAPPKEY = @"062397e1e1a7989303e8ad63"; // 极光appKey
+static NSString * const JPUSHAPPKEY = @"93715ce390e78302b535d875"; // 极光appKey
 static NSString * const channel = @"Publish channel"; // 固定的
 #ifdef DEBUG // 开发
 static BOOL const isProduction = FALSE; // 极光FALSE为开发环境

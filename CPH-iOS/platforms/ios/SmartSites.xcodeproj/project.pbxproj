@@ -1630,7 +1630,7 @@
 				LastUpgradeCheck = 510;
 				TargetAttributes = {
 					1D6058900D05DD3D006BFB54 = {
-						DevelopmentTeam = B77YVTUYB6;
+						DevelopmentTeam = 98G3FSJDJC;
 						ProvisioningStyle = Manual;
 						SystemCapabilities = {
 							com.apple.Push = {
@@ -2090,10 +2090,11 @@
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = SmartSites/SmartSites.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Developer: jiaolong wang (8ZV625WLBE)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
-				DEVELOPMENT_TEAM = B77YVTUYB6;
+				DEVELOPMENT_TEAM = 98G3FSJDJC;
 				ENABLE_BITCODE = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -2120,10 +2121,10 @@
 					"-weak-lSystem",
 					"-ObjC",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.njust;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cph;
 				PRODUCT_NAME = SmartSites;
-				PROVISIONING_PROFILE = "62bd3219-3718-4aa4-b928-353ba8b05974";
-				PROVISIONING_PROFILE_SPECIFIER = SafetyKit_20180511_DEV;
+				PROVISIONING_PROFILE = "9c706d0f-6c7e-465a-b1ab-40e71f90ee60";
+				PROVISIONING_PROFILE_SPECIFIER = CPH_20180514_DEV;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -2136,10 +2137,11 @@
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CODE_SIGN_ENTITLEMENTS = SmartSites/SmartSites.entitlements;
-				CODE_SIGN_IDENTITY = "iPhone Distribution: BOWMANN AND COPMPANY CONSULTING (26TL48764Z)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = YES;
-				DEVELOPMENT_TEAM = B77YVTUYB6;
+				DEVELOPMENT_TEAM = 98G3FSJDJC;
 				ENABLE_BITCODE = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -2164,10 +2166,10 @@
 					"-weak-lSystem",
 					"-ObjC",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.njust;
+				PRODUCT_BUNDLE_IDENTIFIER = com.cph;
 				PRODUCT_NAME = SmartSites;
-				PROVISIONING_PROFILE = "1dc0d699-581d-4cf1-afa6-3f51df3194b5";
-				PROVISIONING_PROFILE_SPECIFIER = SafetyKit_20180511_PRO;
+				PROVISIONING_PROFILE = "20db5a56-f62b-45f6-8a20-5f7b35fc9a28";
+				PROVISIONING_PROFILE_SPECIFIER = CPH_2018051401_PRO;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;

@@ -13,7 +13,7 @@ if (localStorage.getItem("domain")!="" && localStorage.getItem("domain")!=null){
 
 var version = "-1";
 var appname = "aqbzh3client.apk";
-var qydz_default = "http://112.124.14.5/gehs";
+var qydz_default = "http://112.124.14.5/svw-cph";
 var isnewversion = false;
 var isOffLine = "0";//默认无离线模式
 var Phonegap_NeedCertCode = "false";//默认不需要验证码
