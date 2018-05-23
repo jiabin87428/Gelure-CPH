@@ -1630,7 +1630,7 @@
 				LastUpgradeCheck = 510;
 				TargetAttributes = {
 					1D6058900D05DD3D006BFB54 = {
-						DevelopmentTeam = 98G3FSJDJC;
+						DevelopmentTeam = B77YVTUYB6;
 						ProvisioningStyle = Manual;
 						SystemCapabilities = {
 							com.apple.Push = {
@@ -2094,7 +2094,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = NO;
-				DEVELOPMENT_TEAM = 98G3FSJDJC;
+				DEVELOPMENT_TEAM = B77YVTUYB6;
 				ENABLE_BITCODE = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -2121,10 +2121,10 @@
 					"-weak-lSystem",
 					"-ObjC",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.cph;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wjl.cph;
 				PRODUCT_NAME = SmartSites;
-				PROVISIONING_PROFILE = "9c706d0f-6c7e-465a-b1ab-40e71f90ee60";
-				PROVISIONING_PROFILE_SPECIFIER = CPH_20180514_DEV;
+				PROVISIONING_PROFILE = "37cbc56d-6783-4625-848d-fb5786ba5ce6";
+				PROVISIONING_PROFILE_SPECIFIER = CPH_WJL_20180516001_DEV;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -2141,7 +2141,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
 				CODE_SIGN_STYLE = Manual;
 				COPY_PHASE_STRIP = YES;
-				DEVELOPMENT_TEAM = 98G3FSJDJC;
+				DEVELOPMENT_TEAM = B77YVTUYB6;
 				ENABLE_BITCODE = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -2166,10 +2166,10 @@
 					"-weak-lSystem",
 					"-ObjC",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.cph;
+				PRODUCT_BUNDLE_IDENTIFIER = com.wjl.cph;
 				PRODUCT_NAME = SmartSites;
-				PROVISIONING_PROFILE = "20db5a56-f62b-45f6-8a20-5f7b35fc9a28";
-				PROVISIONING_PROFILE_SPECIFIER = CPH_2018051401_PRO;
+				PROVISIONING_PROFILE = "b9ca107d-df0c-4eff-b426-1ced0c910190";
+				PROVISIONING_PROFILE_SPECIFIER = CPH_WJL_20180516001_PRO;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
